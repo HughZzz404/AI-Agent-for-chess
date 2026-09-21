@@ -72,6 +72,9 @@
 ├── examples/
 │   ├── opera_game.pgn          # 示例棋局：Opera Game（Morphy 1858，33 半回合，白胜）
 │   └── ruy_lopez_short.pgn     # 短局示例（20 步，适合快速验证）
+├── dify/
+│   ├── chess-analysis-agent.chatflow.yml   # ⭐ Dify 工作流 DSL，可直接导入
+│   └── README.md                           # 导入步骤与导入后需重新绑定的项
 ├── docs/
 │   ├── CONTEXT.md              # 术语表 / 领域模型
 │   ├── PLAN.md                 # 开发排期与关键决策记录
@@ -172,6 +175,15 @@ docker exec -it ollama ollama pull nomic-embed-text
 ```
 
 ### 6. 在 Dify 中接入
+
+**方式一（推荐，最快）**：直接导入本仓库的工作流 DSL。
+
+> 工作台 → 工作室 → 右上角 `…` → **导入 DSL 文件** → 选择
+> [`dify/chess-analysis-agent.chatflow.yml`](dify/chess-analysis-agent.chatflow.yml)
+
+导入后按 [`dify/README.md`](dify/README.md) 提示，重新绑定**模型、MCP 工具地址、知识库**三处即可。
+
+**方式二（手动搭建）**：
 
 1. **模型供应商**：`集成 → 模型供应商` 安装 **Ollama** 插件（本地模型）和/或 **OpenAI-API-compatible** 插件（云端模型）。
 2. **知识库**：新建知识库，导入 `knowledge/` 下三个 `.md`，Embedding 选 `nomic-embed-text`（或 RagFlow 作为**外部知识库**接入）。

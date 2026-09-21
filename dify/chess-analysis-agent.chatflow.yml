@@ -1,0 +1,705 @@
+version: 0.7.0
+kind: app
+app:
+  name: 国际象棋分析助手
+  mode: advanced-chat
+  icon: 🤖
+  icon_type: emoji
+  icon_background: '#FFEAD5'
+  description: 粘贴一盘 PGN 棋谱，由 Stockfish 逐着评估，再由大模型生成中文复盘报告与改进建议。
+  use_icon_as_answer_icon: false
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    opening_statement: ''
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+    speech_to_text:
+      enabled: false
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    file_upload:
+      enabled: true
+      allowed_file_types:
+      - image
+      - document
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      - .TXT
+      - .MD
+      - .PGN
+      - .CSV
+      - .JSON
+      allowed_file_upload_methods:
+      - remote_url
+      - local_file
+      number_limits: 3
+      fileUploadConfig:
+        file_size_limit: 15
+        knowledge_file_size_limit: 15
+        batch_count_limit: 5
+        file_upload_limit: 20
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        audio_file_size_limit: 50
+        skill_file_size_limit: 50
+        workflow_file_upload_limit: 10
+        image_file_batch_limit: 10
+        single_chunk_attachment_limit: 10
+        attachment_image_file_size_limit: 2
+  graph:
+    nodes:
+    - id: '1788615907611'
+      type: custom
+      data:
+        variables: []
+        type: start
+        title: 用户输入
+        selected: false
+      position:
+        x: 80
+        y: 282
+      targetPosition: left
+      sourcePosition: right
+      zIndex: 0
+      positionAbsolute:
+        x: 80
+        y: 282
+      width: 242
+      height: 72
+      selected: false
+    - id: '1788616028185'
+      type: custom
+      data:
+        variable_selector:
+        - sys
+        - files
+        is_array_file: true
+        type: document-extractor
+        title: 文档提取器
+        selected: false
+      position:
+        x: 354.05354291862
+        y: 260.02210978559924
+      targetPosition: left
+      sourcePosition: right
+      positionAbsolute:
+        x: 354.05354291862
+        y: 260.02210978559924
+      width: 241
+      height: 103
+      selected: false
+      zIndex: 0
+    - id: '1788616079317'
+      type: custom
+      data:
+        cases:
+        - id: 'true'
+          case_id: 'true'
+          logical_operator: or
+          conditions:
+          - id: c1
+            varType: string
+            variable_selector:
+            - sys
+            - query
+            comparison_operator: contains
+            value: '1. '
+          - id: c2
+            varType: array[string]
+            variable_selector:
+            - '1788616028185'
+            - text
+            comparison_operator: not empty
+            value: ''
+        type: if-else
+        title: 条件分支
+        selected: false
+      position:
+        x: 680
+        y: 282
+      targetPosition: left
+      sourcePosition: right
+      positionAbsolute:
+        x: 680
+        y: 282
+      width: 241
+      height: 149
+      zIndex: 0
+      selected: false
+    - id: '1788616387945'
+      type: custom
+      data:
+        tool_parameters:
+          pgn_text:
+            type: mixed
+            value: '{{#code_pgn_178874819549.pgn_text#}}'
+          depth:
+            type: constant
+            value: null
+          topn:
+            type: constant
+            value: null
+          multipv:
+            type: constant
+            value: null
+        tool_configurations: {}
+        tool_node_version: '2'
+        type: tool
+        title: analyze_game
+        provider_id: stockfish_chess
+        provider_type: mcp
+        provider_name: stockfish_chess
+        provider_show_name: stockfish_chess
+        plugin_id: ''
+        plugin_unique_identifier: ''
+        provider_icon:
+          content: 🔗
+          background: '#6366F1'
+        tool_name: analyze_game
+        tool_label: analyze_game
+        tool_description: Analyze a full chess game and report per-move evaluation, win%-loss, classification (best/exact, good, inaccuracy, mistake, blunder), the engine's best alternative move at each step, and the top divergences. Input is a PGN string (moves in Standard Algebraic Notation). Call this when the user supplies or uploads a game record (棋谱/对局).
+        is_team_authorization: true
+        paramSchemas:
+        - name: pgn_text
+          label:
+            en_US: pgn_text
+            zh_Hans: pgn_text
+            pt_BR: pgn_text
+            ja_JP: pgn_text
+          placeholder: null
+          scope: null
+          auto_generate: null
+          template: null
+          required: true
+          default: null
+          min: null
+          max: null
+          precision: null
+          options: []
+          type: string
+          multiple: false
+          human_description:
+            en_US: ''
+            zh_Hans: ''
+            pt_BR: ''
+            ja_JP: ''
+          form: llm
+          llm_description: ''
+          input_schema: null
+        - name: depth
+          label:
+            en_US: depth
+            zh_Hans: depth
+            pt_BR: depth
+            ja_JP: depth
+          placeholder: null
+          scope: null
+          auto_generate: null
+          template: null
+          required: false
+          default: null
+          min: null
+          max: null
+          precision: null
+          options: []
+          type: number
+          multiple: false
+          human_description:
+            en_US: ''
+            zh_Hans: ''
+            pt_BR: ''
+            ja_JP: ''
+          form: llm
+          llm_description: ''
+          input_schema: null
+        - name: topn
+          label:
+            en_US: topn
+            zh_Hans: topn
+            pt_BR: topn
+            ja_JP: topn
+          placeholder: null
+          scope: null
+          auto_generate: null
+          template: null
+          required: false
+          default: null
+          min: null
+          max: null
+          precision: null
+          options: []
+          type: number
+          multiple: false
+          human_description:
+            en_US: ''
+            zh_Hans: ''
+            pt_BR: ''
+            ja_JP: ''
+          form: llm
+          llm_description: ''
+          input_schema: null
+        - name: multipv
+          label:
+            en_US: multipv
+            zh_Hans: multipv
+            pt_BR: multipv
+            ja_JP: multipv
+          placeholder: null
+          scope: null
+          auto_generate: null
+          template: null
+          required: false
+          default: null
+          min: null
+          max: null
+          precision: null
+          options: []
+          type: number
+          multiple: false
+          human_description:
+            en_US: ''
+            zh_Hans: ''
+            pt_BR: ''
+            ja_JP: ''
+          form: llm
+          llm_description: ''
+          input_schema: null
+        params:
+          pgn_text: ''
+          depth: ''
+          topn: ''
+          multipv: ''
+        selected: false
+      position:
+        x: 1308.6731615147767
+        y: 263.8324345953198
+      targetPosition: left
+      sourcePosition: right
+      positionAbsolute:
+        x: 1308.6731615147767
+        y: 263.8324345953198
+      width: 241
+      height: 83
+      selected: false
+      zIndex: 0
+    - id: '1788616497984'
+      type: custom
+      data:
+        query_variable_selector:
+        - '1788615907611'
+        - sys.query
+        query_attachment_selector: []
+        dataset_ids:
+        - 38af5e91-049e-476d-a44d-9434c724dd80
+        retrieval_mode: multiple
+        multiple_retrieval_config:
+          top_k: 4
+          score_threshold: null
+          reranking_mode: reranking_model
+          reranking_enable: false
+        type: knowledge-retrieval
+        title: 知识检索
+        selected: false
+      position:
+        x: 981
+        y: 404
+      targetPosition: left
+      sourcePosition: right
+      positionAbsolute:
+        x: 981
+        y: 404
+      width: 241
+      height: 89
+      selected: false
+      zIndex: 0
+    - id: '1788616637024'
+      type: custom
+      data:
+        model:
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+          name: Qwen/Qwen3.5-27B
+          mode: chat
+          completion_params:
+            temperature: 0.2
+        prompt_template:
+        - role: system
+          text: '你是一个国际象棋复盘助手。
+
+
+            当前任务已经具备完整棋谱，且 Stockfish 已完成分析。用户的“解释错误步骤”是对这盘已上传棋局的明确指令，不是不完整的问题。
+
+
+            你必须直接根据下方“Stockfish 分析摘要”生成中文复盘报告。
+
+
+            严格禁止：
+
+            - 不要说“问题不完整”；
+
+            - 不要要求用户重新提供棋谱；
+
+            - 不要说“请补充信息”；
+
+            - 不要回复英文；
+
+            - 不要忽略下方摘要。
+
+
+            必须以“## 对局概要”开头，并严格使用以下结构：
+
+
+            ## 对局概要
+
+            - 写出结果和总半回合数。
+
+            - 用一句话概括局势如何变化。
+
+
+            ## 关键错误步骤
+
+            逐条解释摘要里的关键分歧点，最多 5 条。每条写：
+
+            - 第几回合、哪一方、实际走子；
+
+            - 引擎建议着法；
+
+            - 这是明显不精确（inaccuracy）还是可改进（good）；
+
+            - 胜率变化；
+
+            - 简要说明为什么该选择会使局面变差。
+
+
+            注意：只能把 classification=inaccuracy 称为“明显不精确”；classification=good 只能称为“可改进”，不能夸大成致命失误或 blunder。
+
+
+            ## 给黑方的改进建议
+
+            给出 3 条具体、可执行的建议，分别围绕：
+
+            1. 子力发展；
+
+            2. 王的安全；
+
+            3. 战术计算。
+
+
+            Stockfish 分析摘要：'
+          id: 200b9aab-503b-4fa2-b417-914ca8129a63
+        - role: user
+          text: '用户已上传完整棋谱，Stockfish 已完成分析。
+
+
+            用户要求：
+
+            {{#sys.query#}}
+
+
+            请根据以下已验证的 Stockfish 分析摘要，直接解释这盘棋的关键错误步骤并给出复盘建议：
+
+
+            {{#code_summary_178874900000.engine_summary#}}'
+          id: 1a3ec220-b09d-4a3b-9ce3-9b691787e92b
+        context:
+          enabled: true
+          variable_selector:
+          - code_summary_178874900000
+          - engine_summary
+        vision:
+          enabled: false
+        type: llm
+        title: LLM
+        selected: true
+        structured_output_enabled: false
+      position:
+        x: 1964.747070985527
+        y: 260.02210978559924
+      targetPosition: left
+      sourcePosition: right
+      positionAbsolute:
+        x: 1964.747070985527
+        y: 260.02210978559924
+      width: 241
+      height: 87
+      selected: true
+      zIndex: 0
+    - id: '1788618119898'
+      type: custom
+      data:
+        model:
+          provider: langgenius/ollama/ollama
+          name: qwen:7b
+          mode: chat
+          completion_params:
+            temperature: 0.7
+        prompt_template:
+        - role: system
+          text: 你是国际象棋知识助手。下面是知识库检索到的棋理片段，请结合它回答用户的问题。 若检索内容与问题无关，就基于通用棋理回答，并注明"以下为通用原则"。 回答要通俗、分条。 棋理片段：{{#context#}} 用户问题：{{#sys.query#}}
+          id: 8b228adf-2b4f-48f4-8a5e-dc1871f606bb
+        context:
+          enabled: true
+          variable_selector:
+          - '1788616497984'
+          - result
+        vision:
+          enabled: false
+        type: llm
+        title: LLM 2
+        selected: false
+      position:
+        x: 1282
+        y: 404
+      targetPosition: left
+      sourcePosition: right
+      positionAbsolute:
+        x: 1282
+        y: 404
+      width: 241
+      height: 87
+      selected: false
+      zIndex: 0
+    - id: '1788618337577'
+      type: custom
+      data:
+        variables: []
+        answer: '{{#1788616637024.text#}}}'
+        type: answer
+        title: 直接回复
+        selected: false
+      position:
+        x: 2319.357408683666
+        y: 260.02210978559924
+      targetPosition: left
+      sourcePosition: right
+      positionAbsolute:
+        x: 2319.357408683666
+        y: 260.02210978559924
+      width: 241
+      height: 101
+      selected: false
+      zIndex: 0
+    - id: '1788618424509'
+      type: custom
+      data:
+        variables: []
+        answer: '{{#1788618119898.text#}}'
+        type: answer
+        title: 直接回复 2
+        selected: false
+      position:
+        x: 1764.7177374893859
+        y: 417.8599990891279
+      targetPosition: left
+      sourcePosition: right
+      positionAbsolute:
+        x: 1764.7177374893859
+        y: 417.8599990891279
+      width: 241
+      height: 101
+      selected: false
+      zIndex: 0
+    - id: code_pgn_178874819549
+      type: custom
+      data:
+        type: code
+        title: 提取PGN
+        code_language: python3
+        code: "def main(doc_text):\n    if not doc_text:\n        return {\"pgn_text\": \"\"}\n    text = doc_text[0] if isinstance(doc_text, list) else doc_text\n    return {\"pgn_text\": text.strip()}\n"
+        variables:
+        - variable: doc_text
+          value_selector:
+          - '1788616028185'
+          - text
+          type: array[string]
+        outputs:
+          pgn_text:
+            type: string
+            children: null
+        selected: false
+      position:
+        x: 985.145623707788
+        y: 277.9238456237078
+      width: 241
+      height: 51
+      selected: false
+      targetPosition: left
+      sourcePosition: right
+      zIndex: 0
+      positionAbsolute:
+        x: 985.145623707788
+        y: 277.9238456237078
+    - id: code_summary_178874900000
+      type: custom
+      data:
+        type: code
+        title: 整理引擎摘要
+        code_language: python3
+        code: "def main(tool_json):\n    analysis = tool_json[0] if isinstance(tool_json, list) and tool_json else tool_json\n    if not isinstance(analysis, dict):\n        return {\"engine_summary\": \"引擎没有返回可读取的分析数据。\"}\n\n    items = analysis.get(\"top_divergences\") or []\n    lines = [\n        \"结果: \" + str(analysis.get(\"result\", \"未知\")),\n        \"总半回合数: \" + str(analysis.get(\"num_moves\", \"未知\")),\n        \"终局 FEN: \" + str(analysis.get(\"final_fen\", \"未知\")),\n        \"关键分歧（按胜率损失从大到小）:\",\n    ]\n    for item in items[:5]:\n        lines.append(\n            \"- 第{move_no}回合 {side}走{move}；分类={classification}；建议={best_before}；胜率损失={win_loss}%（{winpct_before}%→{winpct_after}%）\".format(\n                move_no=item.get(\"move_no\", \"?\"),\n                side=\"白方\" if item.get(\"side\") == \"white\" else \"黑方\",\n                move=item.get(\"move\", \"?\"),\n                classification=item.get(\"classification\", \"未知\"),\n                best_before=item.get(\"best_before\", \"未知\"),\n                win_loss=item.get(\"win_loss\", \"未知\"),\n                winpct_before=item.get(\"winpct_before\", \"未知\"),\n                winpct_after=item.get(\"winpct_after\", \"未知\"),\n            )\n        )\n    return {\"engine_summary\": \"\\n\".join(lines)}"
+        variables:
+        - variable: tool_json
+          value_selector:
+          - '1788616387945'
+          - json
+          type: array[object]
+        outputs:
+          engine_summary:
+            type: string
+            children: null
+        selected: false
+      position:
+        x: 1610.136733287388
+        y: 282
+      width: 241
+      height: 51
+      selected: false
+      targetPosition: left
+      sourcePosition: right
+      zIndex: 0
+      positionAbsolute:
+        x: 1610.136733287388
+        y: 282
+    edges:
+    - id: 1788615907611-source-1788616028185-target
+      type: custom
+      source: '1788615907611'
+      sourceHandle: source
+      target: '1788616028185'
+      targetHandle: target
+      data:
+        sourceType: start
+        targetType: document-extractor
+        isInIteration: false
+        isInLoop: false
+      zIndex: 0
+    - id: 1788616028185-source-1788616079317-target
+      type: custom
+      source: '1788616028185'
+      sourceHandle: source
+      target: '1788616079317'
+      targetHandle: target
+      data:
+        sourceType: document-extractor
+        targetType: if-else
+        isInIteration: false
+        isInLoop: false
+      zIndex: 0
+    - id: 1788616079317-true-1788616387945-target
+      type: custom
+      source: '1788616079317'
+      sourceHandle: 'true'
+      target: code_pgn_178874819549
+      targetHandle: target
+      data:
+        sourceType: if-else
+        targetType: tool
+        isInIteration: false
+        isInLoop: false
+      zIndex: 0
+      selected: false
+    - id: 1788616079317-false-1788616497984-target
+      type: custom
+      source: '1788616079317'
+      sourceHandle: 'false'
+      target: '1788616497984'
+      targetHandle: target
+      data:
+        sourceType: if-else
+        targetType: knowledge-retrieval
+        isInIteration: false
+        isInLoop: false
+      zIndex: 0
+    - id: 1788616497984-source-1788618119898-target
+      type: custom
+      source: '1788616497984'
+      sourceHandle: source
+      target: '1788618119898'
+      targetHandle: target
+      data:
+        sourceType: knowledge-retrieval
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      zIndex: 0
+    - id: 1788616637024-source-1788618337577-target
+      type: custom
+      source: '1788616637024'
+      sourceHandle: source
+      target: '1788618337577'
+      targetHandle: target
+      data:
+        sourceType: llm
+        targetType: answer
+        isInIteration: false
+        isInLoop: false
+      zIndex: 0
+      selected: false
+    - id: 1788618119898-source-1788618424509-target
+      type: custom
+      source: '1788618119898'
+      sourceHandle: source
+      target: '1788618424509'
+      targetHandle: target
+      data:
+        sourceType: llm
+        targetType: answer
+        isInIteration: false
+        isInLoop: false
+      zIndex: 0
+    - id: e_code_pgn_178874819549
+      source: code_pgn_178874819549
+      target: '1788616387945'
+      sourceHandle: source
+      targetHandle: target
+      type: custom
+      zIndex: 0
+      data:
+        sourceType: code
+        targetType: tool
+        isInIteration: false
+        isInLoop: false
+      selected: false
+    - id: edge-tool-summary
+      source: '1788616387945'
+      sourceHandle: source
+      target: code_summary_178874900000
+      targetHandle: target
+      type: custom
+      zIndex: 0
+      data:
+        sourceType: tool
+        targetType: code
+        isInIteration: false
+        isInLoop: false
+      selected: false
+    - id: edge-summary-llm
+      source: code_summary_178874900000
+      sourceHandle: source
+      target: '1788616637024'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+      data:
+        sourceType: code
+        targetType: llm
+        isInIteration: false
+        isInLoop: false
+      selected: false
+    viewport:
+      x: -119.36000421257606
+      y: 194.7249553856174
+      zoom: 0.49959218981568027
+dependencies: []
