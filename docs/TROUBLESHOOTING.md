@@ -20,15 +20,46 @@
 
 ---
 
-## 2. `AttributeError: 'int' object has no attribute 'is_mate'`
+## 2. `AttributeError: 'Cp' object has no attribute 'pov'`（含两个连带 bug）
 
-**现象**：调用 MCP 的 `best_moves` / `evaluate_position` 时服务抛异常，Dify 工作流里工具节点一直转圈。
+**现象**：调用 MCP 的 `best_moves` 抛异常，Dify 工作流里工具节点一直转圈；
+另外 `analyze.py` 输出里 `eval_before_cp` / `eval_after_cp` **恒为 0**。
 
-**原因**：python-chess 1.11.2 中 `PovScore.pov(color)` 返回的是 **int（厘兵分）或 `chess.engine.Mate`**，
-而不是旧版的 `Score` 对象。因此对它继续调用 `.score()` / `.is_mate()` / `.pov()` 都会失败。
+**原因**：python-chess 1.11.2 中 `PovScore.pov(color)` 返回的是
+**`chess.engine.Cp`（厘兵分）或 `chess.engine.Mate`**，而不是旧版的 `Score` 对象，也不是普通 `int`。
+它有自己的 `.score()` / `.mate()` / `.is_mate()`，但**没有 `.pov()`**。
 
-**解决**：统一用 `isinstance(pov, int)` 分支处理，`Mate` 用 `.mate()` 取步数并映射到 ±100000。
-参见 `src/analyze.py` 的 `white_winpct_from_pov()` 与 `src/mcp_server.py` 的 `best_moves()`。
+这一处 API 变化连带引发三个问题：
+
+| 问题 | 说明 |
+|---|---|
+| `.pov()` / `.score()` 调用失败 | `best_moves` 里对已取的 `pov` 又调 `.pov()`，直接抛异常 |
+| `eval_cp` 恒为 0 | 用 `isinstance(pov, int)` 判断必然走错分支，落进 mate 分支后 `.mate()` 返回 `None`，于是 cp 被赋成 0 |
+| PV 后续着法报"着法非法" | 前两个错误修好后暴露：`board.san(m)` 用**原始棋盘**转换 PV 里第 2 步及之后的着法，而那些着法只在推演棋盘中合法 |
+
+**解决**：
+
+```python
+pov = info["score"].pov(chess.WHITE)          # Cp 或 Mate
+if pov.is_mate():
+    cp = 100000 if pov.mate() > 0 else -100000
+else:
+    cp = pov.score()                          # ← 不要用 isinstance(pov, int) 判断
+
+# PV 必须边推边转 SAN
+pv_board = board.copy()
+pv_san = []
+for mv in pv[:8]:
+    pv_san.append(pv_board.san(mv))
+    pv_board.push(mv)
+```
+
+参见 `src/analyze.py` 的 `best_eval()` 与 `src/mcp_server.py` 的 `best_moves()`。
+修复后 `evaluate_position` 返回的 `eval_cp` 为真实厘兵分（如初始局面 49），`best_moves` 返回完整的
+候选着法与推演序列（`Nf6 O-O Nxe4 Re1 Nd6 Bxc6`）。
+
+> **教训**：一个异常把后面的问题挡住了。修完 `.pov()` 报错后，PV 的非法着法问题才暴露出来——
+> 修 bug 后要重新跑一遍完整功能验证，而不是只看报错消失就收工。
 
 ---
 

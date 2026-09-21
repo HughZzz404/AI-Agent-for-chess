@@ -109,17 +109,23 @@ def best_moves(fen: str, depth: int = DEFAULT_DEPTH, multipv: int = 3) -> dict:
     for info in infos:
         pv = info.get("pv", [])
         san = board.san(pv[0]) if pv else "-"
-        # python-chess >= 1.11: PovScore.pov() returns an int (centipawns) or Mate,
-        # NOT a Score object - calling .score()/.pov() on it would raise AttributeError.
+        # python-chess >= 1.11: PovScore.pov() returns chess.engine.Cp or chess.engine.Mate,
+        # NOT a plain int and NOT a PovScore (it has no .pov()), so use is_mate()/score().
         pov = info.get("score", chess.engine.PovScore(0, chess.WHITE)).pov(chess.WHITE)
         winpct = analyze_core.white_winpct_from_pov(pov, depth)
-        if isinstance(pov, int):
-            cp = pov
+        if pov.is_mate():
+            cp = 100000 if pov.mate() > 0 else -100000
         else:
-            m = pov.mate()
-            cp = 100000 if (m is not None and m > 0) else -100000 if (m is not None and m < 0) else 0
+            cp = pov.score()
+        # PV 里的后续着法只在推演棋盘中合法，必须边推边转 SAN，
+        # 否则 board.san() 会报 "expect move to be legal or null"。
+        pv_board = board.copy()
+        pv_san = []
+        for mv in pv[:8]:
+            pv_san.append(pv_board.san(mv))
+            pv_board.push(mv)
         lines.append({"move": san, "winpct": round(winpct, 1), "eval_cp": cp,
-                      "pv": " ".join(board.san(m) for m in pv[:8])})
+                      "pv": " ".join(pv_san)})
     return {"fen": fen, "depth": depth, "lines": lines}
 
 

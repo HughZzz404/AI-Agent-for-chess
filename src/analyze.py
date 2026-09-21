@@ -87,13 +87,12 @@ def best_eval(engine, board, depth, multipv=1):
     pv = info.get("pv", [])
     best_san = board.san(pv[0]) if pv else "-"
     score = info.get("score", chess.engine.PovScore(0, chess.WHITE))
-    pov = score.pov(chess.WHITE)  # int (centipawns) or chess.engine.Mate
+    pov = score.pov(chess.WHITE)  # chess.engine.Cp or chess.engine.Mate
     winpct = white_winpct_from_pov(pov, depth)
-    if isinstance(pov, int):
-        cp = pov
+    if pov.is_mate():
+        cp = 100000 if pov.mate() > 0 else -100000
     else:
-        m = pov.mate()
-        cp = 100000 if (m is not None and m > 0) else -100000 if (m is not None and m < 0) else 0
+        cp = pov.score()
     return winpct, cp, best_san
 
 
