@@ -1,0 +1,42 @@
+# ---- 引擎二进制（约 200MB，不入库；用 scripts/download_stockfish.py 获取）----
+engine/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# ---- 密钥与本地配置 ----
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+secrets/
+
+# ---- 分析产物 ----
+report.json
+*_report.json
+*_result.json
+api_payload.json
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+nul
+
+# ---- 日志与缓存 ----
+*.log
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

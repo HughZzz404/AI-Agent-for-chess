@@ -1,0 +1,8 @@
+# AI 国际象棋分析 Agent —— 运行依赖
+# Python 3.11+
+
+# 棋局解析、著法生成与 UCI 引擎通信
+chess>=1.11.2,<2.0
+
+# 把 Stockfish 封装为 MCP 工具服务（SSE）
+fastmcp>=4.0.3,<5.0

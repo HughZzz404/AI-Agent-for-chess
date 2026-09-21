@@ -1,0 +1,14 @@
+# 统一换行符，避免 Windows / Unix 协作时整文件 diff
+* text=auto eol=lf
+
+# Windows 脚本保持 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制文件不做换行转换
+*.exe binary
+*.nnue binary
+*.png binary
+*.jpg binary
+*.zip binary
+*.tar binary
